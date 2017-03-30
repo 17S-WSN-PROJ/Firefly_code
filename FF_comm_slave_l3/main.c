@@ -119,7 +119,7 @@ int main ()
     bmac_task_config ();
 
     nrk_create_taskset ();
-
+		printf("Task set created \r\n"); 
     nrk_start ();
     return 0;
 }
@@ -133,12 +133,12 @@ void tx_task ()
     nrk_time_t start_time, cur_time;
     nrk_sig_t tx_done_signal;
     nrk_sig_mask_t ret;
-
-    while (!bmac_started ())
+		printf("in tx_task, max buf len = %d \r\n", RF_MAX_PAYLOAD_SIZE); 
+    /*while (!bmac_started ())
     {
         nrk_wait_until_next_period ();
     }
-
+		*/
     tx_done_signal = bmac_get_tx_done_signal();
     nrk_signal_register(tx_done_signal);
 
@@ -147,41 +147,45 @@ void tx_task ()
     tx_len=0;
 		wait = 0; 
 		nrk_gpio_set(NRK_PORTB_3); 
-    printf("Init tx task\r\n"); 
+    printf("Init tx task\r\n");
 		while(1)
     {
         if(tx_State==MSG_NO_TRANSMIT)
         {
             if(!wait)
             {
+							while(1){
                 nrk_time_get(&cur_time);
-                if (start_time.secs + secBtwnLightSamps <= cur_time.secs)
-                {   //tell IMU to give us data
+               // if (start_time.secs + secBtwnLightSamps <= cur_time.secs)
+               if(1)
+							 {   //tell IMU to give us data
 										nrk_gpio_toggle(NRK_PORTB_3); 
 										tx_buf[0]=MAC_ADDR;
 										i = 0;  
 										flag = 0; 
+									//printf("Long string of words \r\n"); 
 										do{
 											tmp = getc1();
 											if(tmp == '*'){
 												flag = 1; 
-												printf("%u \r\n", tmp); 
+										//		printf("%u ", tmp);  
 											}
-											if(!flag)
-												continue; 
-											if((tmp <= '9' && tmp >= '0') || tmp == ',' || tmp == '.'){
-												serial_buf[i] = tmp;
-												i++;
+										//	if(!flag)
+										//		continue; 
+											if((tmp <= '9' && tmp >= '0') || tmp == ',' || 
+												tmp == '.' || tmp == '-'){
+												printf("%c",tmp); 
+												i++; 
 											}
 										}while(tmp != '#'); 
-										printf("\r\n"); 	
+										printf(", total %i \r\n", i); 	
 										tx_buf[0] = MAC_ADDR; 
-										memcpy(tx_buf+1, &(cur_time.secs),4);
-                    memcpy(tx_buf+5, &(cur_time.nano_secs),4);
-                    memcpy(tx_buf+9, serial_buf, i); 
-										for(j = 0; j < i; j++){
+										//memcpy(tx_buf+1, &(cur_time.secs),4);
+                    //memcpy(tx_buf+5, &(cur_time.nano_secs),4);
+                    //memcpy(tx_buf+9, serial_buf, i); 
+									/*	for(j = 0; j < i; j++){
 											printf("%c", tx_buf[j+9]); 
-										}
+										}*/
 										/*	for(j = 0; j < i ; j++){
 											printf("%x",tx_buf[j]); 
 										}*/
@@ -189,6 +193,7 @@ void tx_task ()
                     tx_State = 	MSG_LIGHT_SAMP;
                     start_time=cur_time;
                 }
+							}
             }
         }
         switch(tx_State)
@@ -350,8 +355,8 @@ void nrk_create_taskset ()
     RX_TASK.cpu_reserve.secs = 0;
     RX_TASK.cpu_reserve.nano_secs = 200 * NANOS_PER_MS;
     RX_TASK.offset.secs = 0;
-    RX_TASK.offset.nano_secs = 0;
-    nrk_activate_task (&RX_TASK);
+ 		RX_TASK.offset.nano_secs = 0;
+   // nrk_activate_task (&RX_TASK);
 
     TX_TASK.task = tx_task;
     TX_TASK.Ptos = (void *) &tx_task_stack[NRK_APP_STACKSIZE - 1];
@@ -363,7 +368,7 @@ void nrk_create_taskset ()
     TX_TASK.period.secs = 0;
     TX_TASK.period.nano_secs = 500 * NANOS_PER_MS;
     TX_TASK.cpu_reserve.secs = 0;
-    TX_TASK.cpu_reserve.nano_secs = 300 * NANOS_PER_MS;
+    TX_TASK.cpu_reserve.nano_secs = 500 * NANOS_PER_MS;
     TX_TASK.offset.secs = 0;
     TX_TASK.offset.nano_secs = 0;
     nrk_activate_task (&TX_TASK);

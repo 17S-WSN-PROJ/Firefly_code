@@ -32,6 +32,7 @@
 
 // Enable buffered and signal controlled serial RX
 #define NRK_UART_BUF   1
+#define MAX_RX_UART_BUF 256
 
 
 // Max number of tasks in your application
