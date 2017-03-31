@@ -134,7 +134,9 @@ void tx_task ()
     nrk_sig_t tx_done_signal;
     nrk_sig_mask_t ret;
 		printf("in tx_task, max buf len = %d \r\n", RF_MAX_PAYLOAD_SIZE); 
-    /*while (!bmac_started ())
+    bmac_init (11);
+   
+	 /*while (!bmac_started ())
     {
         nrk_wait_until_next_period ();
     }
@@ -166,20 +168,21 @@ void tx_task ()
 									//printf("Long string of words \r\n"); 
 										do{
 											tmp = getc1();
-											if(tmp == '*'){
+										//	if(tmp == '*'){
 												flag = 1; 
 										//		printf("%u ", tmp);  
-											}
-										//	if(!flag)
-										//		continue; 
+										//	}
+											if(!flag)
+												continue; 
 											if((tmp <= '9' && tmp >= '0') || tmp == ',' || 
 												tmp == '.' || tmp == '-'){
-												printf("%c",tmp); 
+										//		printf("%c",tmp); 
+												tx_buf[i] = tmp; 
 												i++; 
 											}
 										}while(tmp != '#'); 
-										printf(", total %i \r\n", i); 	
-										tx_buf[0] = MAC_ADDR; 
+									//	printf(", total %i \r\n", i); 	
+									//	tx_buf[0] = MAC_ADDR; 
 										//memcpy(tx_buf+1, &(cur_time.secs),4);
                     //memcpy(tx_buf+5, &(cur_time.nano_secs),4);
                     //memcpy(tx_buf+9, serial_buf, i); 
@@ -193,6 +196,21 @@ void tx_task ()
                     tx_State = 	MSG_LIGHT_SAMP;
                     start_time=cur_time;
                 }
+								nrk_led_set(ORANGE_LED);
+								val = bmac_tx_pkt_nonblocking(tx_buf, i);
+						//		nrk_kprintf (PSTR ("Tx packet enqueued\r\n"));
+
+								ret = nrk_event_wait (SIG(tx_done_signal));
+							/*	            if(ret & SIG(tx_done_signal) == 0 )
+								            {
+								                nrk_kprintf (PSTR ("TX done signal error\r\n"));
+								            }
+								            else
+								            {
+								                nrk_kprintf(PSTR("Tx task sent data!\r\n"));
+								            }*/
+								nrk_led_clr(ORANGE_LED);
+									
 							}
             }
         }
