@@ -157,17 +157,21 @@ void tx_task ()
             if(!wait)
             {
 							while(1){
-                nrk_time_get(&cur_time);
+							 nrk_led_clr(GREEN_LED); 
+               delay(200); 
+							 nrk_time_get(&cur_time);
                // if (start_time.secs + secBtwnLightSamps <= cur_time.secs)
                if(1)
 							 {   //tell IMU to give us data
-										nrk_gpio_toggle(NRK_PORTB_3); 
+										nrk_led_set(GREEN_LED); 
+										nrk_gpio_set(NRK_PORTB_3); 
 										tx_buf[0]=MAC_ADDR;
 										i = 0;  
 										flag = 0; 
 									//printf("Long string of words \r\n"); 
 										do{
 											tmp = getc1();
+											nrk_gpio_clr(NRK_PORTB_3); 
 										//	if(tmp == '*'){
 												flag = 1; 
 										//		printf("%u ", tmp);  
@@ -176,7 +180,7 @@ void tx_task ()
 												continue; 
 											if((tmp <= '9' && tmp >= '0') || tmp == ',' || 
 												tmp == '.' || tmp == '-'){
-										//		printf("%c",tmp); 
+												printf("%c",tmp); 
 												tx_buf[i] = tmp; 
 												i++; 
 											}

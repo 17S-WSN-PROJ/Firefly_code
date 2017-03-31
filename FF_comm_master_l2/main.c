@@ -199,7 +199,7 @@ void whacky_task ()
                 local_buf = bmac_rx_pkt_get (&len, &rssi);
                 printf ("Got RX packet len=%d RSSI=%d [", len, rssi);
                 for (i = 0; i < len; i++)
-                printf ("%u", local_buf[i]);
+                printf ("%c", local_buf[i]);
                     printf ("]\r\n");
                 nrk_led_clr (ORANGE_LED);
                 // Release the RX buffer so future packets can arrive 
