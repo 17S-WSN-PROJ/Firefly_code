@@ -200,6 +200,11 @@ void tx_task ()
                     tx_State = 	MSG_LIGHT_SAMP;
                     start_time=cur_time;
                 }
+								//Don't transmit if we don't have a full packet
+								if(i < 40){
+									continue; 
+								}
+
 								nrk_led_set(ORANGE_LED);
 								val = bmac_tx_pkt_nonblocking(tx_buf, i);
 						//		nrk_kprintf (PSTR ("Tx packet enqueued\r\n"));
