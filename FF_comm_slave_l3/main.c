@@ -64,8 +64,9 @@
 #define MSG_NO_TRANSMIT 0x08
 #define MSG_NO_TRANSMIT_LEN 0
 
-
-#define MAC_ADDR	0x05 // 0~2
+#define HOLD_TIME 200
+#define SEND_COUNT 3
+#define MAC_ADDR	1 // 0~2
 #define MAX_RETRY 10
 //===============================================
 //nrk functions
@@ -126,7 +127,7 @@ int main ()
 
 void tx_task ()
 {
-    uint8_t fd, i,j;
+    uint8_t fd, i,j, count;
     int8_t val, flag = 0;
     uint16_t light;
 		char tmp; 
@@ -158,7 +159,7 @@ void tx_task ()
             {
 							while(1){
 							 nrk_led_clr(GREEN_LED); 
-               delay(200); 
+               delay(HOLD_TIME); 
 							 nrk_time_get(&cur_time);
                // if (start_time.secs + secBtwnLightSamps <= cur_time.secs)
                if(1)
@@ -172,6 +173,15 @@ void tx_task ()
 										do{
 											tmp = getc1();
 											nrk_gpio_clr(NRK_PORTB_3); 
+											if(!flag){
+												sprintf(tx_buf, "%u,%u,%lu,", MAC_ADDR, cur_time.secs,
+																																cur_time.nano_secs); 
+												printf("%u,%u,%lu,", MAC_ADDR, cur_time.secs,
+																																cur_time.nano_secs); 
+												
+												i+=strlen(tx_buf); 
+												//i+=12; 
+											}
 										//	if(tmp == '*'){
 												flag = 1; 
 										//		printf("%u ", tmp);  
@@ -185,6 +195,7 @@ void tx_task ()
 												i++; 
 											}
 										}while(tmp != '#'); 
+										printf("\r\n"); 
 									//	printf(", total %i \r\n", i); 	
 									//	tx_buf[0] = MAC_ADDR; 
 										//memcpy(tx_buf+1, &(cur_time.secs),4);
@@ -201,10 +212,12 @@ void tx_task ()
                     start_time=cur_time;
                 }
 								//Don't transmit if we don't have a full packet
-								if(i < 40){
+							//	if(i < 50){
+								if(i < 30){
+									memset(tx_buf, 0, RF_MAX_PAYLOAD_SIZE); 
 									continue; 
 								}
-
+					//	for(count = 0; count < SEND_COUNT ; count++){
 								nrk_led_set(ORANGE_LED);
 								val = bmac_tx_pkt_nonblocking(tx_buf, i);
 						//		nrk_kprintf (PSTR ("Tx packet enqueued\r\n"));
@@ -219,7 +232,7 @@ void tx_task ()
 								                nrk_kprintf(PSTR("Tx task sent data!\r\n"));
 								            }*/
 								nrk_led_clr(ORANGE_LED);
-									
+					//				}
 							}
             }
         }
